@@ -21,8 +21,26 @@ class DashboardController extends Controller
         $totalPermissions = Permission::count();
         $totalModels = ModelProfile::count();
 
-        return view('dashboard', compact('totalUsers', 'totalRoles', 'totalPermissions', 'totalModels'));
+
+        $approvedCount = ModelProfile::where('status', 'Approved')->count();
+        $onHoldCount = ModelProfile::where('status', 'On-Hold')->count();
+        $rejectedCount = ModelProfile::where('status', 'Rejected')->count();
+        $newRequestCount = ModelProfile::where('status', 'new-request')->count();
+        $totalRequests = ModelProfile::count();
+
+        return view('dashboard', compact(
+            'totalUsers',
+            'totalRoles',
+            'totalPermissions',
+            'totalModels',
+            'approvedCount',
+            'onHoldCount',
+            'rejectedCount',
+            'newRequestCount',
+            'totalRequests'
+        ));
     }
+
     public function Request()
     {
         $models = ModelProfile::with('assets')->latest()->paginate(15);

@@ -94,13 +94,13 @@ class ModelProfileController extends Controller
             'email' => $email ?? 'No email in model profile',
         ]);
 
-        // ✅ Only send email if a valid email exists and status actually changed
-        if ($email && $oldStatus !== $newStatus) {
+        // ✅ Send email ONLY if status changed to "approved" and email exists
+        if ($email && $oldStatus !== $newStatus && $newStatus === 'approved') {
             try {
                 Mail::to($email)->send(new ModelStatusChangedMail($model, $newStatus));
-                Log::info("Status email sent successfully to {$email}");
+                Log::info("Approval email sent successfully to {$email}");
             } catch (\Exception $e) {
-                Log::error("Failed to send status update email: " . $e->getMessage());
+                Log::error("Failed to send approval email: " . $e->getMessage());
             }
         }
 
@@ -110,6 +110,7 @@ class ModelProfileController extends Controller
             'new_status' => $newStatus,
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -247,7 +248,7 @@ class ModelProfileController extends Controller
         Mail::to($email)->send(new ModelVerificationMail($name, $otp));
 
         // Redirect to OTP page
-        return redirect()->route('verification.notice')->with('success', 'A verification code was sent to your email.');
+        return redirect()->route('verification.email')->with('success', 'A verification code was sent to your email.');
         // return redirect()
         //     ->route('models.index')
         //     ->with('success', 'Model profile created successfully.');
@@ -276,6 +277,13 @@ class ModelProfileController extends Controller
 
         return $pdf->download($model->name . '_request.pdf');
     }
+    public function getLatestModels()
+    {
+        $latestModels = ModelProfile::latest()->take(3)->get(['id', 'name', 'created_at']);
+
+        return response()->json($latestModels);
+    }
+
     public function edit(ModelProfile $model)
     {
         $model->load('assets');

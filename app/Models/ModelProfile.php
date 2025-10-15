@@ -27,7 +27,7 @@ class ModelProfile extends Model
         'passport_no','passport_expiry','nationality','country_of_passport',
         'cnic','cnic_expiry','backup_contact_name','backup_number',
         'languages','other_languages','special_talent','measurements',
-        'signed_date','status',
+        'signed_date','status','isVerified',
     ];
 
     // Relationship

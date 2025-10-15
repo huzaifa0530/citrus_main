@@ -20,7 +20,7 @@
                                     <h3 class="f-w-300 d-flex align-items-center m-b-0">
                                         <i class="feather icon-inbox text-c-blue f-30 m-r-10"></i>
 
-                                        4
+                                  {{ $newRequestCount }}
                                     </h3>
                                 </div>
                                 <div class="col-5 text-right">
@@ -44,7 +44,7 @@
                                 <div class="col-7">
                                     <h3 class="f-w-300 d-flex align-items-center m-b-0">
                                         <i class="feather icon-layers text-c-blue f-30 m-r-10"></i>
-                                        1,245
+                                  {{ $totalRequests }}
                                     </h3>
                                 </div>
                                 <div class="col-5 text-right">
@@ -68,7 +68,7 @@
                                 <div class="col-7">
                                     <h3 class="f-w-300 d-flex align-items-center m-b-0">
                                         <i class="feather icon-check text-c-green f-30 m-r-10"></i>
-                                        850
+                                  {{ $approvedCount }}
                                     </h3>
                                 </div>
                                 <div class="col-5 text-right">
@@ -92,7 +92,7 @@
                                 <div class="col-7">
                                     <h3 class="f-w-300 d-flex align-items-center m-b-0">
                                         <i class="feather icon-pause text-c-orange f-30 m-r-10"></i>
-                                        250
+                                      {{ $onHoldCount }}
                                     </h3>
                                 </div>
                                 <div class="col-5 text-right">
@@ -116,7 +116,7 @@
                                 <div class="col-7">
                                     <h3 class="f-w-300 d-flex align-items-center m-b-0">
                                         <i class="feather icon-x text-c-red f-30 m-r-10"></i>
-                                        145
+                              {{ $rejectedCount }}
                                     </h3>
                                 </div>
                                 <div class="col-5 text-right">

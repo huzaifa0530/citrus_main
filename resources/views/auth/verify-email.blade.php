@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="{{ asset('User/assets/css/style.css') }}">
 
     <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
         .otp-input {
             width: 50px;
             height: 50px;
@@ -19,20 +24,44 @@
             border-radius: 10px;
             border: 1px solid #ced4da;
             margin: 0 5px;
+            transition: all 0.3s ease;
         }
 
         .otp-input:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+            border-color: #96CA4A;
+            box-shadow: 0 0 6px rgba(150, 202, 74, 0.6);
             outline: none;
         }
 
         .verify-btn {
             border-radius: 10px;
+            background-color: #96CA4A !important;
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .verify-btn:hover {
+            background-color: #83b542 !important;
+            transform: scale(1.02);
         }
 
         .card-shadow {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+        }
+
+        .login-wb {
+            color: #2e2e2e;
+        }
+
+        a.text-primary {
+            color: #96CA4A !important;
+        }
+
+        a.text-primary:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -61,8 +90,8 @@
 
                 <!-- Right Side -->
                 <div class="col-md-5">
-                    <div class="card card-shadow p-4 rounded-4">
-                        <h3 class="text-center mb-4">Email Verification</h3>
+                    <div class="card card-shadow p-4 rounded-4 bg-white">
+                        <h3 class="text-center mb-4 text-dark">Email Verification</h3>
 
                         <form method="POST" action="{{ route('verify.otp') }}">
                             @csrf
@@ -115,17 +144,16 @@
         });
     </script>
 
-
+    <!-- {{-- Debug (optional, remove in production) --}}
     @if (session('model_otp'))
-        <div style="color: green; font-weight: bold;">
+        <div style="color: green; font-weight: bold; text-align:center;">
             DEBUG: OTP from session = {{ session('model_otp') }}
         </div>
     @else
-        <div style="color: red; font-weight: bold;">
+        <div style="color: red; font-weight: bold; text-align:center;">
             DEBUG: No OTP found in session
         </div>
-    @endif
+    @endif -->
 
 </body>
-
 </html>

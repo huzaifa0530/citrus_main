@@ -16,6 +16,7 @@ class OtpVerificationController extends Controller
      */
     public function showForm()
     {
+        Log::info('✅ Entered showForm method');
         return view('auth.verify-email');
     }
 
@@ -27,51 +28,50 @@ class OtpVerificationController extends Controller
         $enteredOtp = is_array($request->otp) ? implode('', $request->otp) : $request->otp;
         $sessionOtp = session('model_otp');
         $sessionEmail = session('model_email');
+        $modelId = session('model_id');
 
-        Log::info('OTP verification attempt', compact('enteredOtp', 'sessionOtp', 'sessionEmail'));
+        Log::info('OTP verification attempt', compact('enteredOtp', 'sessionOtp', 'sessionEmail', 'modelId'));
 
-        if ($enteredOtp == $sessionOtp && $sessionEmail) {
-            $user = User::where('email', $sessionEmail)->first();
-            $modelId = session('model_id');
+
+        if ($enteredOtp == $sessionOtp && $sessionEmail && $modelId) {
+
             $modelProfile = ModelProfile::find($modelId);
 
-            if ($user) {
-                if (is_null($user->email_verified_at)) {
-                    $user->email_verified_at = now();
-                    $saved = $user->save();
-
-                    Log::info('Email verification updated', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'saved' => $saved,
-                        'email_verified_at' => $user->email_verified_at,
-                    ]);
-                }
-                if ($modelProfile) {
-                    $modelProfile->status = 'new-request';
-                    $modelProfile->save();
-                    if ($user && $user->email) {
-                        Mail::to($user->email)->send(new ModelStatusMail($user->name, 'new-request'));
-                    }
-
-                    Log::info('Model status updated', [
-                        'model_id' => $modelProfile->id,
-                        'status' => $modelProfile->status,
-                             'email' => $user->email,
-                    ]);
-                }
-
-                session()->forget(['model_otp', 'model_email', 'model_id']);
-
-                return redirect()->route('dashboard')->with('success', 'Email verified successfully!');
+            if (!$modelProfile) {
+                Log::warning('Model not found for OTP verification', compact('modelId'));
+                return back()->withErrors(['otp' => 'Model not found.']);
             }
 
-            return back()->withErrors(['otp' => 'User not found.']);
+            // ✅ Mark verified
+            $modelProfile->isVerified = true;
+            $modelProfile->status = 'new-request';
+            $modelProfile->save();
+
+            Log::info('Model verified successfully', [
+                'model_id' => $modelProfile->id,
+                'email' => $sessionEmail,
+                'status' => $modelProfile->status,
+            ]);
+
+            // ✅ (Optional) Send mail to admin or model
+            if (!empty($sessionEmail)) {
+                try {
+                    Mail::to($sessionEmail)->send(new ModelStatusMail($modelProfile->name, 'new-request'));
+                } catch (\Exception $e) {
+                    Log::error('Mail sending failed during verification', ['error' => $e->getMessage()]);
+                }
+            }
+
+            // ✅ Clear OTP session data
+            session()->forget(['model_otp', 'model_email', 'model_id']);
+
+            return redirect()->route('dashboard')->with('success', 'Model verified successfully!');
         }
 
         Log::warning('OTP mismatch or session expired', compact('enteredOtp', 'sessionOtp', 'sessionEmail'));
 
         return back()->withErrors(['otp' => 'Invalid OTP. Please try again.']);
     }
+
 
 }

@@ -32,65 +32,38 @@
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
-            <li>
-                <div class="dropdown">
-                    <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown"><i
-                            class="icon feather icon-bell"></i></a>
-                    <div class="dropdown-menu dropdown-menu-right notification">
-                        <div class="noti-head">
-                            <h6 class="d-inline-block m-b-0">Notifications</h6>
-                            <div class="float-right">
-                                <a href="javascript:" class="m-r-10">mark as read</a>
-                                <a href="javascript:">clear all</a>
-                            </div>
-                        </div>
-                        <ul class="noti-body">
-                            <li class="n-title">
-                                <p class="m-b-0">NEW</p>
-                            </li>
-                            <li class="notification">
-                                <div class="media">
-                                    <img class="img-radius" src="{{ asset('Admin/assets/images/user/avatar-1.jpg')}}"
-                                        alt="Generic placeholder image">
-                                    <div class="media-body">
-                                        <p><strong>John Doe</strong><span class="n-time text-muted"><i
-                                                    class="icon feather icon-clock m-r-10"></i>30 min</span></p>
-                                        <p>New ticket Added</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="n-title">
-                                <p class="m-b-0">EARLIER</p>
-                            </li>
-                            <li class="notification">
-                                <div class="media">
-                                    <img class="img-radius" src="{{ asset('Admin/assets/images/user/avatar-2.jpg')}}"
-                                        alt="Generic placeholder image">
-                                    <div class="media-body">
-                                        <p><strong>Joseph William</strong><span class="n-time text-muted"><i
-                                                    class="icon feather icon-clock m-r-10"></i>30 min</span></p>
-                                        <p>Prchace New Theme and make payment</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="notification">
-                                <div class="media">
-                                    <img class="img-radius" src="{{ asset('Admin/assets/images/user/avatar-3.jpg')}}"
-                                        alt="Generic placeholder image">
-                                    <div class="media-body">
-                                        <p><strong>Sara Soudein</strong><span class="n-time text-muted"><i
-                                                    class="icon feather icon-clock m-r-10"></i>30 min</span></p>
-                                        <p>currently login</p>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="noti-footer">
-                            <a href="javascript:">show all</a>
-                        </div>
-                    </div>
+        <li>
+    <div class="dropdown">
+        <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown" id="notificationDropdown">
+            <i class="icon feather icon-bell"></i>
+            <!-- 🔴 Badge (added missing element) -->
+            <span id="notification-count"
+                  class="badge badge-danger"
+                  style="position:absolute; top:8px; right:8px; font-size:10px; border-radius:50%; display:none;">
+            </span>
+        </a>
+
+        <div class="dropdown-menu dropdown-menu-right notification">
+            <div class="noti-head">
+                <h6 class="d-inline-block m-b-0">Notifications</h6>
+                <div class="float-right">
+                    <a href="javascript:" class="m-r-10">mark as read</a>
+                    <a href="javascript:">clear all</a>
                 </div>
-            </li>
+            </div>
+
+            <!-- Dynamic List -->
+            <ul class="noti-body" id="latest-models-list">
+                <li class="text-center text-muted py-2">Loading...</li>
+            </ul>
+
+            <div class="noti-footer">
+                <a href="{{ route('models.new-request') }}">show all</a>
+            </div>
+        </div>
+    </div>
+</li>
+
             <li>
                 <div class="dropdown drp-user">
                     <a href="javascript:" class="dropdown-toggle" data-toggle="dropdown">
@@ -145,4 +118,62 @@
         </ul>
     </div>
 </header>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const list = document.getElementById('latest-models-list');
+    const badge = document.getElementById('notification-count');
+
+    function fetchLatestModels() {
+        fetch("{{ route('latest.models') }}")
+            .then(response => response.json())
+            .then(data => {
+                list.innerHTML = ''; // clear old content
+
+                if (data.length === 0) {
+                    list.innerHTML = `<li class="text-center text-muted py-2">No new models</li>`;
+                    badge.style.display = 'none';
+                    return;
+                }
+
+                badge.textContent = data.length;
+                badge.style.display = 'inline-block';
+
+                data.forEach(model => {
+                    const li = document.createElement('li');
+                    li.classList.add('notification');
+                    li.innerHTML = `
+                        <div class="media">
+                            <img class="img-radius"
+                                 src="{{ asset('Admin/assets/images/user/avatar-1.jpg') }}"
+                                 alt="Avatar">
+                            <div class="media-body">
+                                <p>
+                                    <strong>${model.name}</strong>
+                                    <span class="n-time text-muted">
+                                        <i class="icon feather icon-clock m-r-10"></i>
+                                        ${new Date(model.created_at).toLocaleString()}
+                                    </span>
+                                </p>
+                                <p>New model registered</p>
+                            </div>
+                        </div>`;
+                    list.appendChild(li);
+                });
+            })
+            .catch(err => {
+                console.error('Error fetching latest models:', err);
+                list.innerHTML = `<li class="text-center text-danger py-2">Error loading data</li>`;
+            });
+    }
+
+    // Fetch on load
+    fetchLatestModels();
+
+    // Auto-refresh every 30 seconds
+    setInterval(fetchLatestModels, 30000);
+});
+</script>
+
 <!-- [ Header ] end -->

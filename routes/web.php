@@ -41,38 +41,40 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('roles', RoleController::class);
-    Route::get('/model/register', [ModelProfileController::class, 'create'])->name('models.create');
-    Route::post('/model/register', [ModelProfileController::class, 'store'])->name('models.store');
-    Route::get('/new-request', [ModelProfileController::class, 'newRequest'])->name('models.new-request');
+
     Route::get('/pending-request', [ModelProfileController::class, 'pendingRequest'])->name('models.pending-request');
     Route::get('/on-hold-request', [ModelProfileController::class, 'onHoldRequest'])->name('models.hold-request');
     Route::get('/approved-request', [ModelProfileController::class, 'approvedRequest'])->name('models.approved-request');
     Route::get('/rejected-request', [ModelProfileController::class, 'rejectedRequest'])->name('models.rejected-request');
-    Route::get('/models/{id}', [ModelProfileController::class, 'show'])->name('models.show');
-    Route::post('/models/{id}/update-status', [ModelProfileController::class, 'updateStatus'])
-        ->name('models.update-status');
+
     Route::get('/requests/{id}/download-pdf', [ModelProfileController::class, 'downloadPDF'])->name('requests.download-pdf');
-    Route::get('/models/{model}/edit', [ModelProfileController::class, 'edit'])->name('models.edit');
-    Route::put('/models/{model}', [ModelProfileController::class, 'update'])->name('models.update');
-    Route::delete('/models/{model}', [ModelProfileController::class, 'destroy'])->name('models.destroy');
+
 });
+Route::get('/latest-models', [ModelProfileController::class, 'getLatestModels'])->name('latest.models');
 
-
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+Route::get('/new-request', [ModelProfileController::class, 'newRequest'])->name('models.new-request');
 
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ModelVerificationMail;
 use App\Http\Controllers\Auth\OtpVerificationController;
+Route::get('/model/register', [ModelProfileController::class, 'create'])->name('models.create');
+Route::post('/model/register', [ModelProfileController::class, 'store'])->name('models.store');
+Route::get('/models/{id}', [ModelProfileController::class, 'show'])->name('models.show');
+Route::post('/models/{id}/update-status', [ModelProfileController::class, 'updateStatus'])
+    ->name('models.update-status');
+Route::get('/models/{model}/edit', [ModelProfileController::class, 'edit'])->name('models.edit');
+Route::put('/models/{model}', [ModelProfileController::class, 'update'])->name('models.update');
+Route::delete('/models/{model}', [ModelProfileController::class, 'destroy'])->name('models.destroy');
 
-Route::middleware(['web'])->group(function () {
-    Route::get('/verify-email', [OtpVerificationController::class, 'showForm'])
-        ->name('verification.notice');
 
-    Route::post('/verify-otp', [OtpVerificationController::class, 'verify'])
-        ->name('verify.otp');
-});
+Route::get('/verify-otp', [OtpVerificationController::class, 'showForm'])
+    ->name('verification.email')
+    ->withoutMiddleware('auth');
+
+Route::post('/verify-otp', [OtpVerificationController::class, 'verify'])
+    ->name('verify.otp')
+    ->withoutMiddleware('auth');
 
 
 
