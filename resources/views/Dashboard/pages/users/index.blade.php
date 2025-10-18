@@ -8,7 +8,7 @@
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Users</h5>
                 </div>
@@ -18,11 +18,7 @@
                     <li class="breadcrumb-item"><a href="javascript:void(0)">All</a></li>
                 </ul>
             </div>
-            <div class="col-md-6 text-end">
-                <a href="{{ route('users.create') }}" class="btn btn-primary">
-                    <i class="feather icon-plus"></i> Create User
-                </a>
-            </div>
+        
         </div>
     </div>
 </div>

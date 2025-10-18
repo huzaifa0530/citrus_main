@@ -272,7 +272,7 @@ class ModelProfileController extends Controller
     {
         $model = ModelProfile::with('assets')->findOrFail($id);
 
-        $pdf = PDF::loadView('dashboard.pages.request.pdf', compact('model'))
+        $pdf = PDF::loadView('dashboard.pages.components.pdf', compact('model'))
             ->setPaper('a4', 'portrait');
 
         return $pdf->download($model->name . '_request.pdf');
