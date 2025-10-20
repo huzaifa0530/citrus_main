@@ -32,37 +32,36 @@
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
-        <li>
-    <div class="dropdown">
-        <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown" id="notificationDropdown">
-            <i class="icon feather icon-bell"></i>
-            <!-- 🔴 Badge (added missing element) -->
-            <span id="notification-count"
-                  class="badge badge-danger"
-                  style="position:absolute; top:8px; right:8px; font-size:10px; border-radius:50%; display:none;">
-            </span>
-        </a>
+            <li>
+                <div class="dropdown">
+                    <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown" id="notificationDropdown">
+                        <i class="icon feather icon-bell"></i>
+                        <!-- 🔴 Badge (added missing element) -->
+                        <span id="notification-count" class="badge badge-danger"
+                            style="position:absolute; top:8px; right:8px; font-size:10px; border-radius:50%; display:none;">
+                        </span>
+                    </a>
 
-        <div class="dropdown-menu dropdown-menu-right notification">
-            <div class="noti-head">
-                <h6 class="d-inline-block m-b-0">Notifications</h6>
-                <div class="float-right">
-                    <a href="javascript:" class="m-r-10">mark as read</a>
-                    <a href="javascript:">clear all</a>
+                    <div class="dropdown-menu dropdown-menu-right notification">
+                        <div class="noti-head">
+                            <h6 class="d-inline-block m-b-0">Notifications</h6>
+                            <div class="float-right">
+                                <a href="javascript:" class="m-r-10">mark as read</a>
+                                <a href="javascript:">clear all</a>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic List -->
+                        <ul class="noti-body" id="latest-models-list">
+                            <li class="text-center text-muted py-2">Loading...</li>
+                        </ul>
+
+                        <div class="noti-footer">
+                            <a href="{{ route('models.new-request') }}">show all</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Dynamic List -->
-            <ul class="noti-body" id="latest-models-list">
-                <li class="text-center text-muted py-2">Loading...</li>
-            </ul>
-
-            <div class="noti-footer">
-                <a href="{{ route('models.new-request') }}">show all</a>
-            </div>
-        </div>
-    </div>
-</li>
+            </li>
 
             <li>
                 <div class="dropdown drp-user">
@@ -86,20 +85,25 @@
                         </div>
 
                         <ul class="pro-body">
-                            <li><a href="javascript:" class="dropdown-item"><i class="feather icon-settings"></i>
-                                    Settings</a></li>
-                            <li><a href="{{ route('profile.edit') }}" class="dropdown-item"><i class="feather icon-user"></i> Profile</a></li>
+                            <!-- <li><a href="javascript:" class="dropdown-item"><i class="feather icon-settings"></i>
+                                    Settings</a></li> -->
+                            <li><a href="{{ route('profile.edit') }}" class="dropdown-item"><i
+                                        class="feather icon-user"></i> Profile</a></li>
+
+
+
+                            @role('admin')
                             <li>
                                 <a href="{{ route('users.create') }}" class="dropdown-item">
                                     <i class="feather icon-user-plus"></i> Create User
                                 </a>
                             </li>
-
+                            @endrole
                             <!-- Logout Link Inside Menu -->
 
-
+                            <!-- 
                             <li><a href="auth-signin.html" class="dropdown-item"><i class="feather icon-lock"></i> Lock
-                                    Screen</a></li>
+                                    Screen</a></li> -->
                             <li>
                                 <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                     @csrf
@@ -121,29 +125,29 @@
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const list = document.getElementById('latest-models-list');
-    const badge = document.getElementById('notification-count');
+    document.addEventListener('DOMContentLoaded', function () {
+        const list = document.getElementById('latest-models-list');
+        const badge = document.getElementById('notification-count');
 
-    function fetchLatestModels() {
-        fetch("{{ route('latest.models') }}")
-            .then(response => response.json())
-            .then(data => {
-                list.innerHTML = ''; // clear old content
+        function fetchLatestModels() {
+            fetch("{{ route('latest.models') }}")
+                .then(response => response.json())
+                .then(data => {
+                    list.innerHTML = ''; // clear old content
 
-                if (data.length === 0) {
-                    list.innerHTML = `<li class="text-center text-muted py-2">No new models</li>`;
-                    badge.style.display = 'none';
-                    return;
-                }
+                    if (data.length === 0) {
+                        list.innerHTML = `<li class="text-center text-muted py-2">No new models</li>`;
+                        badge.style.display = 'none';
+                        return;
+                    }
 
-                badge.textContent = data.length;
-                badge.style.display = 'inline-block';
+                    badge.textContent = data.length;
+                    badge.style.display = 'inline-block';
 
-                data.forEach(model => {
-                    const li = document.createElement('li');
-                    li.classList.add('notification');
-                    li.innerHTML = `
+                    data.forEach(model => {
+                        const li = document.createElement('li');
+                        li.classList.add('notification');
+                        li.innerHTML = `
                         <div class="media">
                             <img class="img-radius"
                                  src="{{ asset('Admin/assets/images/user/avatar-1.jpg') }}"
@@ -159,21 +163,21 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <p>New model registered</p>
                             </div>
                         </div>`;
-                    list.appendChild(li);
+                        list.appendChild(li);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error fetching latest models:', err);
+                    list.innerHTML = `<li class="text-center text-danger py-2">Error loading data</li>`;
                 });
-            })
-            .catch(err => {
-                console.error('Error fetching latest models:', err);
-                list.innerHTML = `<li class="text-center text-danger py-2">Error loading data</li>`;
-            });
-    }
+        }
 
-    // Fetch on load
-    fetchLatestModels();
+        // Fetch on load
+        fetchLatestModels();
 
-    // Auto-refresh every 30 seconds
-    setInterval(fetchLatestModels, 30000);
-});
+        // Auto-refresh every 30 seconds
+        setInterval(fetchLatestModels, 30000);
+    });
 </script>
 
 <!-- [ Header ] end -->

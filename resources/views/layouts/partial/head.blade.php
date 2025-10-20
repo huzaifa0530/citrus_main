@@ -16,6 +16,9 @@
         content="admin templates, bootstrap admin templates, bootstrap 4, dashboard, dashboard templets, sass admin templets, html admin templates, responsive, bootstrap admin templates free download,premium bootstrap admin templates, Citrus Talent , Citrus Talent  bootstrap admin template, free admin theme, free dashboard template" />
     <meta name="author" content="CodedThemes" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <meta name="user-role" content="{{ Auth::user()->getRoleNames()->first() }}">
+
     <!-- Favicon icon -->
     <link rel="icon" href="{{ asset('Admin/assets/images/favicon.ico')}}" type="image/x-icon">
     <!-- fontawesome icon -->
@@ -77,7 +80,7 @@
             font-weight: 600;
         }
 
-     
+
         .dropdown-item:active,
         .dropdown-item:focus,
         .dropdown-item:hover {

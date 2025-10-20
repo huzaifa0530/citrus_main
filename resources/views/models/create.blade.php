@@ -40,7 +40,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Your Father Name</label>
                                     <input type="text" name="father_name" class="form-control"
-                                        placeholder="Enter your father name">
+                                        placeholder="Enter your father name" required>
                                 </div>
                             </div>
                         </div>
@@ -49,13 +49,13 @@
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Date Of Birth</label>
-                                    <input type="date" name="dob" class="form-control">
+                                    <input type="date" name="dob" class="form-control" required>
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Age</label>
-                                    <input type="number" name="age" class="form-control" placeholder="Enter your age">
+                                    <input type="number" name="age" class="form-control" placeholder="Enter your age" required>
                                 </div>
                             </div>
                         </div>
@@ -64,7 +64,7 @@
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Gender</label>
-                                    <select name="gender" class="form-select">
+                                    <select name="gender" class="form-select" required>
                                         <option value="">Select Your Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
@@ -85,15 +85,14 @@
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Mobile No.</label>
-                                    <input type="text" name="mobile_no" class="form-control"
-                                        placeholder="Enter your phone number">
+                               <input type="tel" name="mobile_no" class="form-control" pattern="^03[0-9]{9}$" placeholder="Enter your phone number" required>
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Home No.</label>
-                                    <input type="text" name="home_no" class="form-control"
-                                        placeholder="Enter your home number">
+                                    <input type="tel" name="home_no" class="form-control"
+                                        placeholder="Enter your home number" pattern="^03[0-9]{9}$"pattern="^03[0-9]{9}$">
                                 </div>
                             </div>
                         </div>
@@ -103,7 +102,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Address</label>
                                     <input type="text" name="address" class="form-control"
-                                        placeholder="Enter your home address">
+                                        placeholder="Enter your home address" required>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +112,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Email Id.</label>
                                     <input type="email" name="email" class="form-control"
-                                        placeholder="Enter your email address">
+                                        placeholder="Enter your email address" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
                                 </div>
                             </div>
                             <div class="col-md-5">
@@ -163,14 +162,14 @@
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Passport No.</label>
-                                    <input type="text" name="passport_no" class="form-control"
-                                        placeholder="Enter your passport number">
+                                    <input type="number"  name="passport_no" class="form-control"
+                                        placeholder="Enter your passport number" required>
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Expiry</label>
-                                    <input type="date" name="passport_expiry" class="form-control">
+                                    <input type="date" name="passport_expiry" class="form-control" required>
                                 </div>
                             </div>
                         </div>
@@ -180,13 +179,13 @@
                                 <div class="mb-3">
                                     <label class="form-label">Nationality</label>
                                     <input type="text" name="nationality" class="form-control"
-                                        placeholder="Enter your nationality">
+                                        placeholder="Enter your nationality" required>
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">Country Of Passport</label>
-                                    <select name="country_of_passport" class="form-select">
+                                    <select name="country_of_passport" class="form-select" required>
                                         <option value="">Select Your Country</option>
                                         <option value="Pakistan">Pakistan</option>
                                         <option value="Iran">Iran</option>
@@ -200,8 +199,7 @@
                             <div class="col-md-5">
                                 <div class="mb-3">
                                     <label class="form-label">CNIC</label>
-                                    <input type="text" name="cnic" class="form-control"
-                                        placeholder="Enter your CNIC number">
+                                 <input type="text" name="cnic" class="form-control" pattern="^[0-9]{5}-?[0-9]{7}-?[0-9]$" placeholder="e.g. 4210112345678 or 42101-1234567-8" required>
                                 </div>
                             </div>
                             <div class="col-md-5">
@@ -278,29 +276,29 @@
                             </div>
                             <div class="col-md-4">
                                 <input type="text" name="measurements[hair_color]" class="form-control mb-2"
-                                    placeholder="Hair Colour">
-                                <input type="text" name="measurements[height]" class="form-control mb-2"
-                                    placeholder="Height">
-                                <input type="text" name="measurements[shoulder]" class="form-control mb-2"
-                                    placeholder="Shoulder">
-                                <input type="text" name="measurements[bust]" class="form-control mb-2"
-                                    placeholder="Bust/Chest">
-                                <input type="text" name="measurements[hip]" class="form-control mb-2" placeholder="Hip">
-                                <input type="text" name="measurements[dress]" class="form-control mb-2"
-                                    placeholder="Dress/Suit">
+                                    placeholder="Hair Colour"   required>
+                                <input type="number" name="measurements[height]" class="form-control mb-2"
+                                    placeholder="Height"  required>
+                                <input type="number" name="measurements[shoulder]" class="form-control mb-2"
+                                    placeholder="Shoulder"  required>
+                                <input type="number" name="measurements[bust]" class="form-control mb-2"
+                                    placeholder="Bust/Chest"  required>
+                                <input type="number" name="measurements[hip]" class="form-control mb-2" placeholder="Hip">
+                                <input type="number" name="measurements[dress]" class="form-control mb-2"
+                                    placeholder="Dress/Suit"  required>
                             </div>
                             <div class="col-md-4">
                                 <input type="text" name="measurements[eye_color]" class="form-control mb-2"
                                     placeholder="Eye Colour">
-                                <input type="text" name="measurements[collar]" class="form-control mb-2"
-                                    placeholder="Collar Size">
-                                <input type="text" name="measurements[top]" class="form-control mb-2"
-                                    placeholder="Top (S/M/L)">
-                                <input type="text" name="measurements[waist]" class="form-control mb-2" placeholder="Waist">
-                                <input type="text" name="measurements[trouser]" class="form-control mb-2"
-                                    placeholder="Trouser">
-                                <input type="text" name="measurements[shoe]" class="form-control mb-2"
-                                    placeholder="Shoe Size">
+                                <input type="number" name="measurements[collar]" class="form-control mb-2"
+                                    placeholder="Collar Size" required   >
+                                <input type="number" name="measurements[top]" class="form-control mb-2"
+                                    placeholder="Top (S/M/L)" required>
+                                <input type="number" name="measurements[waist]" class="form-control mb-2" placeholder="Waist" required>
+                                <input type="number" name="measurements[trouser]" class="form-control mb-2"
+                                    placeholder="Trouser" required>
+                                <input type="number" name="measurements[shoe]" class="form-control mb-2"
+                                    placeholder="Shoe Size" required>
                             </div>
                         </div>
 
@@ -308,29 +306,29 @@
                         <div class="row justify-content-center my-3">
                             <div class="col-md-5">
                                 <label class="form-label">Upload Your Close Up Image</label>
-                                <input type="file" name="close_up_image" class="form-control filepond" accept="image/*">
+                                <input type="file" name="close_up_image" class="form-control filepond" accept="image/*" required>
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label">Upload Your Full Body Image</label>
-                                <input type="file" name="full_body_image" class="form-control filepond" accept="image/*">
+                                <input type="file" name="full_body_image" class="form-control filepond" accept="image/*" required>
                             </div>
                         </div>
 
                         <div class="row justify-content-center my-3">
                             <div class="col-md-5">
                                 <label class="form-label">Upload Your Half Body Image</label>
-                                <input type="file" name="half_body_image" class="form-control filepond" accept="image/*">
+                                <input type="file" name="half_body_image" class="form-control filepond" accept="image/*" required>
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label">Upload Your Side Body Image</label>
-                                <input type="file" name="side_body_image" class="form-control filepond" accept="image/*">
+                                <input type="file" name="side_body_image" class="form-control filepond" accept="image/*" required>
                             </div>
                         </div>
 
                         <div class="row justify-content-center mt-3">
                             <div class="col-md-5">
                                 <label class="form-label">Model's Signature</label>
-                                <input type="file" name="signature_image" class="form-control filepond" accept="image/*">
+                                <input type="file" name="signature_image" class="form-control filepond" accept="image/*" >
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label">Signed Date</label>

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\ModelProfile;
 use App\Models\Asset;
 use Illuminate\Http\Request;
@@ -11,6 +11,12 @@ use App\Mail\ModelVerificationMail;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\ModelStatusChangedMail;
+use Google\Client;
+use Google\Service\Drive;
+use Google\Service\Drive\DriveFile;
+
+use Google\Service\Drive\Permission;
+use App\Services\GoogleDriveService;
 
 
 use Illuminate\Support\Facades\Log;
@@ -29,7 +35,7 @@ class ModelProfileController extends Controller
     {
         $models = ModelProfile::with('assets')
             ->where('status', 'new-request')
-            ->paginate(15);
+            ->get(); // ✅ actually fetch the models
 
         return view('dashboard.pages.request.New_Request', compact('models'));
     }
@@ -164,6 +170,9 @@ class ModelProfileController extends Controller
             'side_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
             'signature_image' => 'nullable|file|mimes:jpg,jpeg,png',
             'video' => 'nullable|file|mimes:mp4,avi,mov',
+            'cnic_front' => 'nullable|file|mimes:jpg,jpeg,png',
+            'cnic_back' => 'nullable|file|mimes:jpg,jpeg,png',
+
         ]);
 
         if (isset($data['languages'])) {
@@ -173,7 +182,6 @@ class ModelProfileController extends Controller
             $data['measurements'] = json_encode($data['measurements']);
         }
 
-        // 1) Create the profile (remove file keys)
         $modelData = collect($data)->except([
             'close_up_image',
             'full_body_image',
@@ -182,11 +190,42 @@ class ModelProfileController extends Controller
             'signature_image',
             'video',
         ])->toArray();
-        $modelData['status'] = 'pending';
 
+        $modelData['status'] = 'pending';
         $model = ModelProfile::create($modelData);
 
-        // 2) Save uploaded files as assets
+        // ✅ Google Drive Upload
+        $driveService = new GoogleDriveService();
+        $token = session('google_token');
+
+        if (!$token) {
+            // ✅ Step 1: Collect only non-file inputs safely
+            // Save text fields
+            $formData = $request->except(array_keys($request->allFiles()));
+
+            // Save uploaded files temporarily
+            $fileData = [];
+            foreach ($request->allFiles() as $key => $file) {
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $storedPath = $file->store('tmp', 'local'); // Stored in storage/app/tmp
+                    $fileData[$key] = $storedPath;
+                }
+            }
+
+            // ✅ Step 3: Only store plain arrays/strings in the session
+
+            session([
+                'pending_form_data' => $formData,
+                'pending_files' => $fileData,
+                'resume_upload' => true,
+                'model_id' => $model->id
+            ]);
+
+
+            return redirect('/google/auth')->with('info', 'Please connect Google Drive to continue your upload.');
+        }
+
+
         $fileFields = [
             'close_up_image',
             'full_body_image',
@@ -194,46 +233,32 @@ class ModelProfileController extends Controller
             'side_body_image',
             'signature_image',
             'video',
+            'cnic_front',
+            'cnic_back',
         ];
 
         foreach ($fileFields as $field) {
             if ($request->hasFile($field)) {
                 $file = $request->file($field);
 
-                // store in public disk under models/YYYY/n/j
-                $relativePath = $file->store(
-                    'models/' . now()->format('Y/n/j'),
-                    'public'
-                );
-                $url = Storage::url($relativePath);
+                // Upload to Drive
+                $publicUrl = $driveService->uploadToDrive($file, $token);
 
-                // determine type
+                // Determine file type
                 $mime = $file->getClientMimeType();
                 $type = str_starts_with($mime, 'video') ? 'video' : 'image';
 
-                // optional: image dimensions
-                $width = $height = null;
-                if ($type === 'image') {
-                    try {
-                        [$width, $height] = getimagesize($file->getRealPath());
-                    } catch (\Throwable $e) {
-                        $width = $height = null;
-                    }
-                }
-
-                // create asset row
                 $model->assets()->create([
-                    'name' => $field, // same as input name
-                    'path' => $relativePath,
-                    'url' => $url,
+                    'name' => $field,
+                    'url' => $publicUrl,
+                    'path' => $publicUrl,
                     'type' => $type,
                     'mime_type' => $mime,
                     'size' => $file->getSize(),
-                    'disk' => 'public',
+                    'disk' => 'google_drive',
                     'original_name' => $file->getClientOriginalName(),
-                    'width' => $width,
-                    'height' => $height,
                 ]);
+
             }
         }
 
@@ -249,10 +274,80 @@ class ModelProfileController extends Controller
 
         // Redirect to OTP page
         return redirect()->route('verification.email')->with('success', 'A verification code was sent to your email.');
-        // return redirect()
-        //     ->route('models.index')
-        //     ->with('success', 'Model profile created successfully.');
     }
+
+    private function getClient()
+    {
+        $client = new Client();
+        $client->setAuthConfig(storage_path('app/google/client_secret.json'));
+        $client->addScope(Drive::DRIVE_FILE);
+        $client->setAccessType('offline');
+        $client->setPrompt('select_account consent');
+        $client->setRedirectUri(url('/google/callback'));
+        return $client;
+    }
+
+    public function authenticate()
+    {
+        $client = $this->getClient();
+        return redirect($client->createAuthUrl());
+    }
+
+    public function callback(Request $request)
+    {
+        $client = $this->getClient();
+        $code = $request->get('code');
+
+        if ($code) {
+            $token = $client->fetchAccessTokenWithAuthCode($code);
+            session(['google_token' => $token]);
+
+            // ✅ Resume pending upload if exists
+            if (session('resume_upload')) {
+                return redirect()->route('model.upload.resume');
+            }
+
+            return redirect('/google/upload-form')->with('success', 'Google Drive connected!');
+        }
+
+        return redirect('/google/auth')->with('error', 'Authorization failed.');
+    }
+
+  public function resumeUpload()
+{
+    $formData = session('pending_form_data');
+    $fileData = session('pending_files');
+    $modelId = session('model_id');
+
+    if (!$formData || !$fileData || !$modelId) {
+        return redirect()->back()->with('error', 'Missing session data for upload.');
+    }
+
+    $request = new \Illuminate\Http\Request();
+    $request->replace($formData);
+
+    foreach ($fileData as $key => $path) {
+        $absolutePath = storage_path('app/' . $path);
+
+        if (!file_exists($absolutePath)) {
+            return redirect()->back()->with('error', "File missing: {$absolutePath}");
+        }
+
+        $file = new \Illuminate\Http\UploadedFile(
+            $absolutePath,
+            basename($path),
+            \Illuminate\Support\Facades\File::mimeType($absolutePath),
+            null,
+            true
+        );
+
+        $request->files->set($key, $file);
+    }
+
+    session()->forget(['pending_form_data', 'pending_files', 'resume_upload']);
+
+    return $this->store($request);
+}
 
     /**
      * Display the specified resource.
@@ -268,15 +363,17 @@ class ModelProfileController extends Controller
         return response()->json($model);
     }
 
-    public function downloadPDF($id)
-    {
-        $model = ModelProfile::with('assets')->findOrFail($id);
+public function downloadPDF($id)
+{
+    $model = ModelProfile::with('assets')->findOrFail($id);
+    $userRole = Auth::user()->getRoleNames()->first(); // Or however your role is stored
 
-        $pdf = PDF::loadView('dashboard.pages.components.pdf', compact('model'))
-            ->setPaper('a4', 'portrait');
+    $pdf = PDF::loadView('dashboard.components.pdf', compact('model', 'userRole'))
+        ->setPaper('a4', 'portrait');
 
-        return $pdf->download($model->name . '_request.pdf');
-    }
+    return $pdf->download($model->name . '_request.pdf');
+}
+
     public function getLatestModels()
     {
         $latestModels = ModelProfile::latest()->take(3)->get(['id', 'name', 'created_at']);

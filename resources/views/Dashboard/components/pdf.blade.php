@@ -98,7 +98,7 @@
             <div class="value">{{ $model->occupation ?? '-' }}</div>
         </div>
     </div>
-
+    @if($userRole !== 'Brand')
     <!-- CONTACT -->
     <div class="section-title">Contact Information</div>
     <div class="row">
@@ -118,6 +118,8 @@
             <div class="value">{{ $model->address ?? '-' }}</div>
         </div>
     </div>
+
+
 
     <!-- SOCIAL -->
     <div class="section-title">Social Media</div>
@@ -172,7 +174,7 @@
     @php $languages = $model->languages ? json_decode($model->languages, true) : []; @endphp
     <div class="section-title">Languages</div>
     <p>{{ $languages ? implode(', ', $languages) : '-' }}</p>
-
+@endif
     <!-- GALLERY -->
     <div class="section-title">Gallery</div>
     <div class="gallery">

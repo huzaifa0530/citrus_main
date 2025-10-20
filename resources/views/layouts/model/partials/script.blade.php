@@ -6,14 +6,14 @@
     FilePond.registerPlugin(FilePondPluginImagePreview);
 
     // Initialize all .filepond inputs
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('input.filepond').forEach(el => {
-            FilePond.create(el, {
-                allowMultiple: true,
-                labelIdle: 'Drag & Drop or <span class="filepond--label-action">Browse</span>',
-            });
-        });
-    });
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     document.querySelectorAll('input.filepond').forEach(el => {
+    //         FilePond.create(el, {
+    //             allowMultiple: true,
+    //             labelIdle: 'Drag & Drop or <span class="filepond--label-action">Browse</span>',
+    //         });
+    //     });
+    // });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"

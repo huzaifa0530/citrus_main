@@ -92,4 +92,8 @@ Route::get('/resend-otp', function () {
     return back()->with('success', 'A new OTP has been sent to your email.');
 })->name('resend.otp');
 
+Route::get('/google/auth', [ModelProfileController::class, 'authenticate']);
+Route::get('/google/callback', [ModelProfileController::class, 'callback']);
+Route::get('/model/resume-upload', [ModelProfileController::class, 'resumeUpload'])->name('model.upload.resume');
+
 require __DIR__ . '/auth.php';

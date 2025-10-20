@@ -14,6 +14,8 @@
                         <li class="breadcrumb-item"><a href="index-2.html"><i class="feather icon-home"></i></a></li>
                         <li class="breadcrumb-item"><a href="#!">Requests</a></li>
                         <li class="breadcrumb-item"><a href="javascript:">New Requests</a></li>
+
+
                     </ul>
                 </div>
             </div>
@@ -50,8 +52,8 @@
 
                                             <th scope="row">{{ $index + 1 }}</th>
                                             <td>
-                                                <img src="{{ $model->assetUrl('profile_image', 'https://via.placeholder.com/40') }}"
-                                                    class="img-radius" width="40" alt="User">
+                                                <!-- <img src="{{ $model->assetUrl('profile_image', 'https://via.placeholder.com/40') }}"
+                                                    class="img-radius" width="40" alt="User"> -->
                                                 <span class="ml-2">{{ $model->name }}</span>
                                             </td>
                                             <td>

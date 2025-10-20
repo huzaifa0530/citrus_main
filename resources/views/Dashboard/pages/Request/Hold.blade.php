@@ -52,8 +52,8 @@
                                         <tr>
                                             <th scope="row">{{$index + 1  }}</th>
                                             <td>
-                                                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="img-radius"
-                                                    width="40" alt="User">
+                                                <!-- <img src="https://randomuser.me/api/portraits/men/32.jpg" class="img-radius"
+                                                    width="40" alt="User"> -->
                                                 <span class="ml-2">{{ $model->name }}</span>
 
                                             </td>
