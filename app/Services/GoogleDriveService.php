@@ -1,56 +1,57 @@
 <?php
-// app/Services/GoogleDriveService.php
+
 namespace App\Services;
 
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
-use Google\Service\Drive\Permission;
 
 class GoogleDriveService
 {
-    private function getClient(): Client
+    protected Drive $drive;
+    protected string $folderId;
+
+    public function __construct()
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google/client_secret.json'));
-        $client->addScope(Drive::DRIVE_FILE);
+        $client->setAuthConfig(storage_path('app/google/service-account.json'));
+        $client->addScope(Drive::DRIVE);
         $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
-        return $client;
+
+        $this->drive = new Drive($client);
+
+        // 🔥 Portal Assets folder ID
+        $this->folderId = config('services.google.portal_assets_folder_id');
     }
 
-    public function uploadToDrive($uploadedFile, $token)
+    public function upload($file): string
     {
-        $client = $this->getClient();
-        $client->setAccessToken($token);
-
-        // Refresh token if expired
-        if ($client->isAccessTokenExpired() && $client->getRefreshToken()) {
-            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-            session(['google_token' => $client->getAccessToken()]);
-        }
-
-        $service = new Drive($client);
-
-        // Create file metadata
         $fileMetadata = new DriveFile([
-            'name' => $uploadedFile->getClientOriginalName(),
+            'name' => uniqid() . '_' . $file->getClientOriginalName(),
+            'parents' => [$this->folderId],
         ]);
 
-        // Upload the file
-        $file = $service->files->create($fileMetadata, [
-            'data' => file_get_contents($uploadedFile->getRealPath()),
-            'mimeType' => $uploadedFile->getMimeType(),
-            'uploadType' => 'multipart',
-        ]);
+        $content = file_get_contents($file->getRealPath());
 
-        // Make public
-        $permission = new Permission([
-            'type' => 'anyone',
-            'role' => 'reader',
-        ]);
-        $service->permissions->create($file->id, $permission);
+        $uploadedFile = $this->drive->files->create(
+            $fileMetadata,
+            [
+                'data' => $content,
+                'mimeType' => $file->getClientMimeType(),
+                'uploadType' => 'multipart',
+                'fields' => 'id',
+            ]
+        );
 
-        return "https://drive.google.com/file/d/{$file->id}/view?usp=sharing";
+        // Make file public
+        $this->drive->permissions->create(
+            $uploadedFile->id,
+            new \Google\Service\Drive\Permission([
+                'type' => 'anyone',
+                'role' => 'reader',
+            ])
+        );
+
+        return "https://drive.google.com/uc?id={$uploadedFile->id}";
     }
 }

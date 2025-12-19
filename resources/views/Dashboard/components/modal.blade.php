@@ -1,8 +1,8 @@
-<div class="modal fade" id="viewRequestModal" tabindex="-1" role="dialog"
-     aria-labelledby="viewRequestModalLabel" aria-hidden="true">
+<div class="modal fade" id="viewRequestModal" tabindex="-1" role="dialog" aria-labelledby="viewRequestModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg border-0 rounded">
-                      <div class="modal-header text-white">
+            <div class="modal-header text-white">
                 <h5 class="modal-title" id="viewRequestModalLabel">
                     <i class="feather icon-user mr-2"></i> Registration Details
                 </h5>
@@ -18,9 +18,12 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="window.print()">
+
+                <a type="button" class="btn btn-primary" href="{{ route('requests.download-pdf', $model->id) }}">
                     <i class="feather icon-printer"></i> Print
-                </button>
+                </a>
+
+
             </div>
         </div>
     </div>

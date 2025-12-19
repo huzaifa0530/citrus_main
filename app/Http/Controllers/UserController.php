@@ -30,14 +30,14 @@ class UserController extends Controller
             $query->where('name', 'brand');
         })->paginate(10);
 
-        return view('Dashboard.Pages.users.index', compact('allUsers', 'admins', 'brands'));
+        return view('dashboard.pages.users.index', compact('allUsers', 'admins', 'brands'));
     }
 
 
     public function create()
     {
         $roles = Role::all();
-        return view('Dashboard.pages.users.create', compact('roles'));
+        return view('dashboard.pages.users.create', compact('roles'));
     }
 
     public function store(Request $request)
@@ -59,13 +59,13 @@ class UserController extends Controller
             $user->syncRoles($request->roles);
         }
 
-        return redirect()->route('Dashboard.pages.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
     public function edit(User $user)
     {
         $roles = Role::all();
-        return view('Dashboard.pages.users.edit', compact('user', 'roles'));
+        return view('dashboard.pages.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
@@ -88,12 +88,12 @@ class UserController extends Controller
 
         $user->syncRoles($request->roles ?? []);
 
-        return redirect()->route('Dashboard.pages.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('Dashboard.pages.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }

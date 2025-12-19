@@ -21,13 +21,36 @@ class ModelProfile extends Model
 
     protected $fillable = [
         // ... your existing fillable fields (no file columns here if switching to assets)
-        'name', 'father_name', 'dob', 'age', 'gender', 'occupation',
-        'mobile_no', 'home_no', 'address', 'email',
-        'facebook_id','instagram_id','snapchat_id','tiktok_id','youtube_id',
-        'passport_no','passport_expiry','nationality','country_of_passport',
-        'cnic','cnic_expiry','backup_contact_name','backup_number',
-        'languages','other_languages','special_talent','measurements',
-        'signed_date','status','isVerified',
+        'name',
+        'dob',
+        'age',
+        'gender',
+        'occupation',
+        'mobile_no',
+        'address',
+        'email',
+        'facebook_id',
+        'instagram_id',
+        'snapchat_id',
+        'tiktok_id',
+        'youtube_id',
+        'passport_no',
+        'passport_expiry',
+        'nationality',
+        'country_of_passport',
+        'cnic',
+        'cnic_expiry',
+        'backup_contact_name',
+        'backup_number',
+        'languages',
+        'other_languages',
+        'special_talent',
+        'measurements',
+        'signed_date',
+        'status',
+        'isVerified',
+        'availability',
+        'name_as_per_cnic'
     ];
 
     // Relationship

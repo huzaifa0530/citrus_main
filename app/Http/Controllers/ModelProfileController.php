@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Auth;
+
 use App\Models\ModelProfile;
 use App\Models\Asset;
 use Illuminate\Http\Request;
@@ -14,15 +14,24 @@ use App\Mail\ModelStatusChangedMail;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
-
+use App\Services\WhatsAppService;
 use Google\Service\Drive\Permission;
 use App\Services\GoogleDriveService;
+use Illuminate\Support\Facades\Http;
 
 
 use Illuminate\Support\Facades\Log;
 
 class ModelProfileController extends Controller
 {
+
+    protected $whatsAppService;
+
+    public function __construct(WhatsAppService $whatsAppService)
+    {
+        $this->whatsAppService = $whatsAppService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -35,7 +44,7 @@ class ModelProfileController extends Controller
     {
         $models = ModelProfile::with('assets')
             ->where('status', 'new-request')
-            ->get(); // ✅ actually fetch the models
+            ->paginate(15);
 
         return view('dashboard.pages.request.New_Request', compact('models'));
     }
@@ -100,7 +109,43 @@ class ModelProfileController extends Controller
             'email' => $email ?? 'No email in model profile',
         ]);
 
-        // ✅ Send email ONLY if status changed to "approved" and email exists
+        /*
+        |--------------------------------------------------------------------------
+        | 📌 WhatsApp Message Logic
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($model->mobile_no)) {
+            $staticNumber = "03422112090";
+
+            // Convert to international format (Pakistan example)
+            if (str_starts_with($staticNumber, '0')) {
+                $staticNumber = '+92' . substr($staticNumber, 1);
+            }
+
+            // Default message (optional)
+            $message = "Hello {$model->name}, your profile has been successfully created!";
+
+            // If status changed to APPROVED → send approval message
+            if ($oldStatus !== $newStatus && $newStatus === 'approved') {
+                $message = "Hello {$model->name}, your profile has been *approved*. Congratulations!";
+            }
+
+            // Send WhatsApp message
+            try {
+                $this->whatsAppService->sendMessage($staticNumber, $message);
+                Log::info("WhatsApp message sent to {$model->mobile_no}");
+            } catch (\Exception $e) {
+                Log::error("Failed to send WhatsApp message: " . $e->getMessage());
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 📌 Email Only When Status Approved
+        |--------------------------------------------------------------------------
+        */
+
         if ($email && $oldStatus !== $newStatus && $newStatus === 'approved') {
             try {
                 Mail::to($email)->send(new ModelStatusChangedMail($model, $newStatus));
@@ -130,224 +175,207 @@ class ModelProfileController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'father_name' => 'nullable|string|max:255',
-            'dob' => 'nullable|date',
-            'age' => 'nullable|integer',
-            'gender' => 'nullable|string|max:50',
-            'occupation' => 'nullable|string|max:255',
-            'mobile_no' => 'nullable|string|max:20',
-            'home_no' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'email' => 'nullable|email|max:255',
-            'facebook_id' => 'nullable|string|max:255',
-            'instagram_id' => 'nullable|string|max:255',
-            'snapchat_id' => 'nullable|string|max:255',
-            'tiktok_id' => 'nullable|string|max:255',
-            'youtube_id' => 'nullable|string|max:255',
-            'passport_no' => 'nullable|string|max:100',
-            'passport_expiry' => 'nullable|date',
-            'nationality' => 'nullable|string|max:100',
-            'country_of_passport' => 'nullable|string|max:100',
-            'cnic' => 'nullable|string|max:100',
-            'cnic_expiry' => 'nullable|date',
-            'backup_contact_name' => 'nullable|string|max:255',
-            'backup_number' => 'nullable|string|max:20',
-            'languages' => 'nullable|array',
-            'languages.*' => 'string|max:50',
-            'other_languages' => 'nullable|string|max:255',
-            'special_talent' => 'nullable|string|max:500',
-            'measurements' => 'nullable|array',
-            'measurements.*' => 'nullable|string|max:255',
-            'signed_date' => 'nullable|date',
-
-            // files
-            'close_up_image' => 'nullable|file|mimes:jpg,jpeg,png',
-            'full_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
-            'half_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
-            'side_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
-            'signature_image' => 'nullable|file|mimes:jpg,jpeg,png',
-            'video' => 'nullable|file|mimes:mp4,avi,mov',
-            'cnic_front' => 'nullable|file|mimes:jpg,jpeg,png',
-            'cnic_back' => 'nullable|file|mimes:jpg,jpeg,png',
-
-        ]);
-
-        if (isset($data['languages'])) {
-            $data['languages'] = json_encode($data['languages']);
-        }
-        if (isset($data['measurements'])) {
-            $data['measurements'] = json_encode($data['measurements']);
-        }
-
-        $modelData = collect($data)->except([
-            'close_up_image',
-            'full_body_image',
-            'half_body_image',
-            'side_body_image',
-            'signature_image',
-            'video',
-        ])->toArray();
-
-        $modelData['status'] = 'pending';
-        $model = ModelProfile::create($modelData);
-
-        // ✅ Google Drive Upload
-        $driveService = new GoogleDriveService();
-        $token = session('google_token');
-
-        if (!$token) {
-            // ✅ Step 1: Collect only non-file inputs safely
-            // Save text fields
-            $formData = $request->except(array_keys($request->allFiles()));
-
-            // Save uploaded files temporarily
-            $fileData = [];
-            foreach ($request->allFiles() as $key => $file) {
-                if ($file instanceof \Illuminate\Http\UploadedFile) {
-                    $storedPath = $file->store('tmp', 'local'); // Stored in storage/app/tmp
-                    $fileData[$key] = $storedPath;
-                }
-            }
-
-            // ✅ Step 3: Only store plain arrays/strings in the session
-
-            session([
-                'pending_form_data' => $formData,
-                'pending_files' => $fileData,
-                'resume_upload' => true,
-                'model_id' => $model->id
-            ]);
-
-
-            return redirect('/google/auth')->with('info', 'Please connect Google Drive to continue your upload.');
-        }
-
-
-        $fileFields = [
-            'close_up_image',
-            'full_body_image',
-            'half_body_image',
-            'side_body_image',
-            'signature_image',
-            'video',
-            'cnic_front',
-            'cnic_back',
-        ];
-
-        foreach ($fileFields as $field) {
-            if ($request->hasFile($field)) {
-                $file = $request->file($field);
-
-                // Upload to Drive
-                $publicUrl = $driveService->uploadToDrive($file, $token);
-
-                // Determine file type
-                $mime = $file->getClientMimeType();
-                $type = str_starts_with($mime, 'video') ? 'video' : 'image';
-
-                $model->assets()->create([
-                    'name' => $field,
-                    'url' => $publicUrl,
-                    'path' => $publicUrl,
-                    'type' => $type,
-                    'mime_type' => $mime,
-                    'size' => $file->getSize(),
-                    'disk' => 'google_drive',
-                    'original_name' => $file->getClientOriginalName(),
-                ]);
-
-            }
-        }
-
-        $otp = rand(10000, 99999);
-        $email = $request->email;
-        $name = $request->name;
-
-
-        session(['model_otp' => $otp, 'model_email' => $email, 'model_id' => $model->id,]);
-
-        // Send email
-        Mail::to($email)->send(new ModelVerificationMail($name, $otp));
-
-        // Redirect to OTP page
-        return redirect()->route('verification.email')->with('success', 'A verification code was sent to your email.');
-    }
-
-    private function getClient()
-    {
-        $client = new Client();
-        $client->setAuthConfig(storage_path('app/google/client_secret.json'));
-        $client->addScope(Drive::DRIVE_FILE);
-        $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
-        $client->setRedirectUri(url('/google/callback'));
-        return $client;
-    }
-
-    public function authenticate()
-    {
-        $client = $this->getClient();
-        return redirect($client->createAuthUrl());
-    }
-
-    public function callback(Request $request)
-    {
-        $client = $this->getClient();
-        $code = $request->get('code');
-
-        if ($code) {
-            $token = $client->fetchAccessTokenWithAuthCode($code);
-            session(['google_token' => $token]);
-
-            // ✅ Resume pending upload if exists
-            if (session('resume_upload')) {
-                return redirect()->route('model.upload.resume');
-            }
-
-            return redirect('/google/upload-form')->with('success', 'Google Drive connected!');
-        }
-
-        return redirect('/google/auth')->with('error', 'Authorization failed.');
-    }
-
-  public function resumeUpload()
 {
-    $formData = session('pending_form_data');
-    $fileData = session('pending_files');
-    $modelId = session('model_id');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'father_name' => 'nullable|string|max:255',
+        'dob' => 'nullable|date',
+        'age' => 'nullable|integer',
+        'gender' => 'nullable|string|max:50',
+        'occupation' => 'nullable|string|max:255',
+        'mobile_no' => 'nullable|string|max:20',
+        'home_no' => 'nullable|string|max:20',
+        'address' => 'nullable|string|max:500',
+        'email' => 'nullable|email|max:255',
+        'facebook_id' => 'nullable|string|max:255',
+        'instagram_id' => 'nullable|string|max:255',
+        'snapchat_id' => 'nullable|string|max:255',
+        'tiktok_id' => 'nullable|string|max:255',
+        'youtube_id' => 'nullable|string|max:255',
+        'passport_no' => 'nullable|string|max:100',
+        'passport_expiry' => 'nullable|date',
+        'nationality' => 'nullable|string|max:100',
+        'country_of_passport' => 'nullable|string|max:100',
+        'cnic' => 'nullable|string|max:100',
+        'cnic_expiry' => 'nullable|date',
+        'backup_contact_name' => 'nullable|string|max:255',
+        'backup_number' => 'nullable|string|max:20',
+        'languages' => 'nullable|array',
+        'languages.*' => 'string|max:50',
+        'other_languages' => 'nullable|string|max:255',
+        'special_talent' => 'nullable|string|max:500',
+        'measurements' => 'nullable|array',
+        'measurements.*' => 'nullable|string|max:255',
+        'signed_date' => 'nullable|date',
 
-    if (!$formData || !$fileData || !$modelId) {
-        return redirect()->back()->with('error', 'Missing session data for upload.');
+        // files
+        'close_up_image' => 'nullable|file|mimes:jpg,jpeg,png',
+        'full_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
+        'half_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
+        'side_body_image' => 'nullable|file|mimes:jpg,jpeg,png',
+        'signature_image' => 'nullable|file|mimes:jpg,jpeg,png',
+        'video' => 'nullable|file|mimes:mp4,avi,mov',
+    ]);
+
+    if (isset($data['languages'])) {
+        $data['languages'] = json_encode($data['languages']);
+    }
+    if (isset($data['measurements'])) {
+        $data['measurements'] = json_encode($data['measurements']);
     }
 
-    $request = new \Illuminate\Http\Request();
-    $request->replace($formData);
+    $modelData = collect($data)->except([
+        'close_up_image', 'full_body_image', 'half_body_image',
+        'side_body_image', 'signature_image', 'video',
+    ])->toArray();
 
-    foreach ($fileData as $key => $path) {
-        $absolutePath = storage_path('app/' . $path);
+    $modelData['status'] = 'pending';
+    $model = ModelProfile::create($modelData);
 
-        if (!file_exists($absolutePath)) {
-            return redirect()->back()->with('error', "File missing: {$absolutePath}");
+    // Google Drive
+    $driveService = new GoogleDriveService();
+
+    $fileFields = [
+        'close_up_image',
+        'full_body_image',
+        'half_body_image',
+        'side_body_image',
+        'signature_image',
+        'video',
+    ];
+    
+    foreach ($fileFields as $field) {
+        if ($request->hasFile($field)) {
+        
+            $file = $request->file($field);
+            $publicUrl = $driveService->upload($file);
+        
+            $mime = $file->getClientMimeType();
+            $type = str_starts_with($mime, 'video') ? 'video' : 'image';
+        
+            $model->assets()->create([
+                'name' => $field,
+                'url' => $publicUrl,
+                'path' => $publicUrl,
+                'type' => $type,
+                'mime_type' => $mime,
+                'size' => $file->getSize(),
+                'disk' => 'google_drive',
+                'original_name' => $file->getClientOriginalName(),
+            ]);
         }
-
-        $file = new \Illuminate\Http\UploadedFile(
-            $absolutePath,
-            basename($path),
-            \Illuminate\Support\Facades\File::mimeType($absolutePath),
-            null,
-            true
-        );
-
-        $request->files->set($key, $file);
     }
 
-    session()->forget(['pending_form_data', 'pending_files', 'resume_upload']);
+    // OTP
+    $otp = rand(10000, 99999);
+    $email = $request->email;
+    $name = $request->name;
 
-    return $this->store($request);
+    session([
+        'model_otp' => $otp,
+        'model_email' => $email,
+        'model_id' => $model->id,
+    ]);
+
+    Mail::to($email)->send(new ModelVerificationMail($name, $otp));
+
+    return redirect()->route('verification.email')
+        ->with('success', 'A verification code was sent to your email.');
 }
+
+
+
+    // private function getClient()
+    // {
+    //     $client = new Client();
+    //     $client->setAuthConfig(storage_path('app/google/client_secret.json'));
+    //     $client->addScope(Drive::DRIVE_FILE);
+    //     $client->setAccessType('offline');
+    //     $client->setPrompt('select_account consent');
+    //     $client->setRedirectUri(url('/google/callback'));
+    //     return $client;
+    // }
+
+    // public function authenticate()
+    // {
+    //     $client = $this->getClient();
+    //     return redirect($client->createAuthUrl());
+    // }
+
+    // public function callback(Request $request)
+    // {
+    //     $client = $this->getClient();
+    //     $code = $request->get('code');
+
+    //     if ($code) {
+    //         $token = $client->fetchAccessTokenWithAuthCode($code);
+    //         session(['google_token' => $token]);
+
+    //         // ✅ Resume pending upload if exists
+    //         if (session('resume_upload')) {
+    //             return redirect()->route('model.upload.resume');
+    //         }
+
+    //         return redirect('/google/upload-form')->with('success', 'Google Drive connected!');
+    //     }
+
+    //     return redirect('/google/auth')->with('error', 'Authorization failed.');
+    // }
+
+    // public function resumeUpload()
+    // {
+    //     $formData = session('pending_form_data');
+    //     $fileData = session('pending_files');
+
+    //     if (!$formData) {
+    //         return redirect()->back()->with('error', 'No pending upload found.');
+    //     }
+
+    //     // Rebuild the Request manually
+    //     $request = new \Illuminate\Http\Request();
+    //     $request->replace($formData);
+
+    //     // Attach files back to the Request
+    //     foreach ($fileData as $key => $path) {
+    //         $fullPath = storage_path('app/' . $path);
+
+    //         if (!file_exists($fullPath)) {
+    //             continue; // Skip missing files
+    //         }
+
+    //         if (is_array($path)) {
+    //             foreach ($path as $index => $p) {
+    //                 $pFull = storage_path('app/' . $p);
+    //                 if (!file_exists($pFull))
+    //                     continue;
+
+    //                 $file = new \Illuminate\Http\UploadedFile(
+    //                     $pFull,
+    //                     basename($pFull),
+    //                     null,
+    //                     null,
+    //                     true
+    //                 );
+    //                 $request->files->set($key . '.' . $index, $file);
+    //             }
+    //         } else {
+    //             $file = new \Illuminate\Http\UploadedFile(
+    //                 $fullPath,
+    //                 basename($fullPath),
+    //                 null,
+    //                 null,
+    //                 true
+    //             );
+    //             $request->files->set($key, $file);
+    //         }
+    //     }
+
+
+    //     // ✅ Call your original store logic again
+    //     session()->forget(['pending_form_data', 'pending_files', 'resume_upload']);
+    //     return $this->store($request);
+    // }
+
 
     /**
      * Display the specified resource.
@@ -363,16 +391,63 @@ class ModelProfileController extends Controller
         return response()->json($model);
     }
 
-public function downloadPDF($id)
-{
-    $model = ModelProfile::with('assets')->findOrFail($id);
-    $userRole = Auth::user()->getRoleNames()->first(); // Or however your role is stored
+    public function downloadPDF($id)
+    {
+        $model = ModelProfile::with('assets')->findOrFail($id);
+        $userRole = auth()->user()->role ?? null;
 
-    $pdf = PDF::loadView('dashboard.components.pdf', compact('model', 'userRole'))
-        ->setPaper('a4', 'portrait');
 
-    return $pdf->download($model->name . '_request.pdf');
-}
+        $tempFolder = storage_path('app/public/pdf_images');
+        if (!file_exists($tempFolder)) {
+            mkdir($tempFolder, 0777, true);
+        }
+
+
+        $tempImages = [];
+
+        foreach ($model->assets as $asset) {
+            if ($asset->type === 'image') {
+                // Extract file ID from Google Drive URL
+                preg_match('/\/d\/(.*?)\//', $asset->url, $matches);
+                $fileId = $matches[1] ?? null;
+                if ($fileId) {
+                    $ext = pathinfo($asset->original_name, PATHINFO_EXTENSION) ?? 'jpg';
+                    $tempFileName = $fileId . '.' . $ext;
+                    $tempFilePath = $tempFolder . '/' . $tempFileName;
+
+                    // Download image if it does not exist
+                    if (!file_exists($tempFilePath)) {
+                        $response = Http::get("https://drive.google.com/uc?export=download&id={$fileId}");
+                        file_put_contents($tempFilePath, $response->body());
+                    }
+
+                    // Store the temporary path for use in Blade
+                    $tempImages[$asset->name] = $tempFilePath;
+                }
+            }
+        }
+
+
+        $pdf = PDF::loadView('dashboard.components.pdf', [
+            'model' => $model,
+            'userRole' => $userRole,
+            'tempImages' => $tempImages
+        ])->setPaper('a4', 'portrait');
+
+
+        $pdfContent = $pdf->output();
+
+        foreach ($tempImages as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+
+        return response()->streamDownload(
+            fn() => print ($pdfContent),
+            $model->name . '_request.pdf'
+        );
+    }
 
     public function getLatestModels()
     {

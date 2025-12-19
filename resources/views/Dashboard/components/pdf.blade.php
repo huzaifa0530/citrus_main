@@ -1,52 +1,75 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>{{ $model->name }} - Registration Form</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
-            color: #222;
             font-size: 12px;
+            color: #222;
+            line-height: 1.4;
+            margin: 0;
+            padding: 10px;
         }
-        .container {
-            width: 100%;
-            margin: auto;
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .row {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+
+        .header img {
+            width: 80px;
+            border-radius: 6px;
         }
-        .col-md-5, .col-md-10 {
-            width: 45%;
-            margin: 5px;
+
+        h2 {
+            margin: 5px 0;
         }
-        .label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .value {
-            border-bottom: 1px solid #ccc;
-            padding: 3px 0;
-            min-height: 16px;
-        }
+
         .section-title {
             background: #f4f4f4;
             padding: 5px 10px;
-            border-left: 3px solid #007bff;
-            margin-top: 15px;
+            border-left: 4px solid #007bff;
+            margin-top: 20px;
             margin-bottom: 10px;
             font-weight: bold;
+            font-size: 14px;
         }
-        img {
-            border-radius: 6px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        td {
+            padding: 4px 5px;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .value {
+            border-bottom: 1px solid #aaa;
+            padding: 2px 0;
+            min-height: 16px;
+        }
+
+        .spacer {
+            width: 4%;
+        }
+
+        img.model-image {
             margin-top: 5px;
+            border-radius: 6px;
             max-width: 100%;
             height: auto;
         }
+
         .gallery img {
             width: 100px;
             height: 120px;
@@ -56,135 +79,205 @@
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <div style="text-align:center">
-        <img src="{{ public_path('User/assets/img/logo.png') }}" style="width:80px">
+    <div class="header">
+        <img src="{{ public_path('User/assets/img/logo.png') }}" alt="Logo">
         <h2>Model Registration Form</h2>
         <p>Generated on {{ now()->format('d M Y, h:i A') }}</p>
     </div>
 
     <!-- PERSONAL INFO -->
     <div class="section-title">Personal Information</div>
-    <div class="row">
-        <div class="col-md-5">
-            <label class="label">Full Name</label>
-            <div class="value">{{ $model->name ?? '-' }}</div>
-        </div>
-        <div class="col-md-5">
-            <label class="label">Father Name</label>
-            <div class="value">{{ $model->father_name ?? '-' }}</div>
-        </div>
-    </div>
+    <table>
+        <tr>
+            <td>
+                <span class="label">Full Name:</span>
+                <div class="value">{{ $model->name ?? '-' }}</div>
+            </td>
+            <td class="spacer"></td>
+            <td>
+                <span class="label">Father Name:</span>
+                <div class="value">{{ $model->father_name ?? '-' }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">Date of Birth:</span>
+                <div class="value">{{ $model->dob ?? '-' }}</div>
+            </td>
+            <td class="spacer"></td>
+            <td>
+                <span class="label">Age:</span>
+                <div class="value">{{ $model->age ?? '-' }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">Gender:</span>
+                <div class="value">{{ ucfirst($model->gender ?? '-') }}</div>
+            </td>
+            <td class="spacer"></td>
+            <td>
+                <span class="label">Occupation:</span>
+                <div class="value">{{ $model->occupation ?? '-' }}</div>
+            </td>
+        </tr>
+    </table>
 
-    <div class="row">
-        <div class="col-md-5">
-            <label class="label">Date of Birth</label>
-            <div class="value">{{ $model->dob ?? '-' }}</div>
-        </div>
-        <div class="col-md-5">
-            <label class="label">Age</label>
-            <div class="value">{{ $model->age ?? '-' }}</div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-5">
-            <label class="label">Gender</label>
-            <div class="value">{{ ucfirst($model->gender ?? '-') }}</div>
-        </div>
-        <div class="col-md-5">
-            <label class="label">Occupation</label>
-            <div class="value">{{ $model->occupation ?? '-' }}</div>
-        </div>
-    </div>
     @if($userRole !== 'Brand')
-    <!-- CONTACT -->
-    <div class="section-title">Contact Information</div>
-    <div class="row">
-        <div class="col-md-5">
-            <label class="label">Mobile No.</label>
-            <div class="value">{{ $model->mobile_no ?? '-' }}</div>
-        </div>
-        <div class="col-md-5">
-            <label class="label">Home No.</label>
-            <div class="value">{{ $model->home_no ?? '-' }}</div>
-        </div>
-    </div>
+        <!-- CONTACT -->
+        <div class="section-title">Contact Information</div>
+        <table>
+            <tr>
+                <td>
+                    <span class="label">Mobile No:</span>
+                    <div class="value">{{ $model->mobile_no ?? '-' }}</div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">Home No:</span>
+                    <div class="value">{{ $model->home_no ?? '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span class="label">Address:</span>
+                    <div class="value">{{ $model->address ?? '-' }}</div>
+                </td>
+            </tr>
+        </table>
 
-    <div class="row">
-        <div class="col-md-10">
-            <label class="label">Address</label>
-            <div class="value">{{ $model->address ?? '-' }}</div>
-        </div>
-    </div>
+        <!-- SOCIAL -->
+        <div class="section-title">Social Media</div>
+        <table>
+            <tr>
+                <td>
+                    <span class="label">Facebook:</span>
+                    <div class="value">{{ $model->facebook_id ?? '-' }}</div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">Instagram:</span>
+                    <div class="value">{{ $model->instagram_id ?? '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Snapchat:</span>
+                    <div class="value">{{ $model->snapchat_id ?? '-' }}</div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">Tiktok:</span>
+                    <div class="value">{{ $model->tiktok_id ?? '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span class="label">YouTube:</span>
+                    <div class="value">{{ $model->youtube_id ?? '-' }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- IDENTIFICATION -->
+        <div class="section-title">Identification</div>
+        <table>
+            <tr>
+                <td>
+                    <span class="label">Passport No:</span>
+                    <div class="value">{{ $model->passport_no ?? '-' }}</div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">Passport Expiry:</span>
+                    <div class="value">{{ $model->passport_expiry ?? '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">CNIC:</span>
+                    <div class="value">{{ $model->cnic ?? '-' }}</div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">CNIC Expiry:</span>
+                    <div class="value">{{ $model->cnic_expiry ?? '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">CNIC Front:</span><br>
+                    <!-- CNIC Front -->
+                    @if(isset($tempImages['cnic_front']))
+                        <img src="{{ $tempImages['cnic_front'] }}" width="180">
+                    @endif
+
+                </td>
+                <td class="spacer"></td>
+                <td>
+                    <span class="label">CNIC Back:</span><br>
+
+                    <!-- CNIC Back -->
+                    @if(isset($tempImages['cnic_back']))
+                        <img src="{{ $tempImages['cnic_back'] }}" width="180">
+                    @endif
 
 
 
-    <!-- SOCIAL -->
-    <div class="section-title">Social Media</div>
-    <div class="row">
-        <div class="col-md-5"><label class="label">Facebook</label><div class="value">{{ $model->facebook_id ?? '-' }}</div></div>
-        <div class="col-md-5"><label class="label">Instagram</label><div class="value">{{ $model->instagram_id ?? '-' }}</div></div>
-    </div>
-    <div class="row">
-        <div class="col-md-5"><label class="label">Snapchat</label><div class="value">{{ $model->snapchat_id ?? '-' }}</div></div>
-        <div class="col-md-5"><label class="label">Tiktok</label><div class="value">{{ $model->tiktok_id ?? '-' }}</div></div>
-    </div>
-    <div class="row">
-        <div class="col-md-5"><label class="label">YouTube</label><div class="value">{{ $model->youtube_id ?? '-' }}</div></div>
-    </div>
 
-    <!-- PASSPORT & CNIC -->
-    <div class="section-title">Identification</div>
-    <div class="row">
-        <div class="col-md-5"><label class="label">Passport No.</label><div class="value">{{ $model->passport_no ?? '-' }}</div></div>
-        <div class="col-md-5"><label class="label">Expiry</label><div class="value">{{ $model->passport_expiry ?? '-' }}</div></div>
-    </div>
+                </td>
+            </tr>
+        </table>
 
-    <div class="row">
-        <div class="col-md-5"><label class="label">CNIC</label><div class="value">{{ $model->cnic ?? '-' }}</div></div>
-        <div class="col-md-5"><label class="label">Expiry</label><div class="value">{{ $model->cnic_expiry ?? '-' }}</div></div>
-    </div>
+        <!-- MEASUREMENTS -->
+        <div class="section-title">Measurements</div>
+        @php
+            $measurements = $model->measurements ? json_decode($model->measurements, true) : [];
+            $chunks = array_chunk($measurements, 2, true);
+        @endphp
 
-    <div class="row">
-        <div class="col-md-5">
-            <label class="label">CNIC Front</label>
-            @if($model->cnic_front)<img src="{{ public_path(str_replace(url('/'), '', $model->cnic_front)) }}" width="200">@endif
-        </div>
-        <div class="col-md-5">
-            <label class="label">CNIC Back</label>
-            @if($model->cnic_back)<img src="{{ public_path(str_replace(url('/'), '', $model->cnic_back)) }}" width="200">@endif
-        </div>
-    </div>
 
-    <!-- MEASUREMENTS -->
-    <div class="section-title">Measurements</div>
-    @php $measurements = $model->measurements ? json_decode($model->measurements, true) : []; @endphp
-    <div class="row">
-        @foreach($measurements as $key => $value)
-            <div class="col-md-5">
-                <label class="label">{{ ucwords(str_replace('_', ' ', $key)) }}</label>
-                <div class="value">{{ $value ?? '-' }}</div>
-            </div>
-        @endforeach
-    </div>
+        <table>
+            @foreach($chunks as $chunk)
+                <tr>
+                    @foreach($chunk as $key => $value)
+                        <td>
+                            <span class="label">{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
+                            <div class="value">{{ $value ?? '-' }}</div>
+                        </td>
+                        <td class="spacer"></td>
+                    @endforeach
+                    @if(count($chunk) < 2)
+                        <td></td>
+                        <td></td>
+                    @endif
+                </tr>
+            @endforeach
+        </table>
 
-    <!-- LANGUAGES -->
-    @php $languages = $model->languages ? json_decode($model->languages, true) : []; @endphp
-    <div class="section-title">Languages</div>
-    <p>{{ $languages ? implode(', ', $languages) : '-' }}</p>
-@endif
+        <!-- LANGUAGES -->
+        <div class="section-title">Languages</div>
+        <table>
+            <tr>
+                <td colspan="3">{{ $model->languages ? implode(', ', json_decode($model->languages, true)) : '-' }}</td>
+            </tr>
+        </table>
+    @endif
+
     <!-- GALLERY -->
     <div class="section-title">Gallery</div>
-    <div class="gallery">
+
+    <!-- Add spacing -->
+    <div style="margin-top: 50px;" class="gallery">
         @foreach($model->assets as $asset)
-            @if($asset->type === 'image')
-                <img src="{{ public_path(str_replace(url('/'), '', $asset->url)) }}" alt="">
+            @if($asset->type === 'image' && isset($tempImages[$asset->name]))
+                <img src="{{ $tempImages[$asset->name] }}" width="100" height="120">
             @endif
         @endforeach
     </div>
 
-</div>
 </body>
+
 </html>

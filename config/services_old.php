@@ -35,9 +35,4 @@ return [
         ],
     ],
 
-    'google' => [
-        'portal_assets_folder_id' => env('GOOGLE_PORTAL_ASSETS_FOLDER_ID'),
-    ],
-
-
 ];
