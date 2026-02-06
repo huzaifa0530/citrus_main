@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ModelVerificationMail;
 use App\Http\Controllers\Auth\OtpVerificationController;
+use App\Http\Controllers\WhatsappMessageController;
 use Illuminate\Http\Request;
 // Route::get('/', function () {
 //     return view('welcome');
@@ -95,5 +96,12 @@ Route::get('/resend-otp', function () {
     return back()->with('success', 'A new OTP has been sent to your email.');
 })->name('resend.otp');
 
+
+
+Route::get('/whatsapp-messages', [WhatsappMessageController::class, 'index'])
+    ->name('whatsapp.messages.index');
+
+Route::post('/whatsapp-messages/send-again/{id}', [WhatsappMessageController::class, 'sendAgain'])
+    ->name('whatsapp.messages.sendAgain');
 
 require __DIR__ . '/auth.php';

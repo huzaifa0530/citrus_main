@@ -13,7 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\ModelStatusChangedMail;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Http;
-
+use App\Models\WhatsappMessage;
 use ZipArchive;
 
 use Illuminate\Support\Facades\Log;
@@ -111,7 +111,7 @@ class ModelProfileController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (!empty($model->mobile_no)) {
+
             $staticNumber = "03422112090";
 
             // Convert to international format (Pakistan example)
@@ -124,17 +124,31 @@ class ModelProfileController extends Controller
 
             // If status changed to APPROVED → send approval message
             if ($oldStatus !== $newStatus && $newStatus === 'approved') {
-                $message = "Hello {$model->name}, your profile has been *approved*. Congratulations!";
+                $message = "Hello {$model->name}, your profile has been *approved*. Congratulations! you can contact use in 03002425235";
+
+                // ✅ Save message in DB BEFORE sending
+                $whatsappMessage = WhatsappMessage::create([
+                    'model_profile_id' => $model->id,
+                    'mobile_no' => $model->mobile_no,
+                    'message' => $message,
+                    'status' => $newStatus,
+                ]);
+
+
+
             }
 
             // Send WhatsApp message
             try {
-                $this->whatsAppService->sendMessage($staticNumber, $message);
-                Log::info("WhatsApp message sent to {$model->mobile_no}");
+                $this->whatsAppService->sendProfileApprovedTemplate($staticNumber, $model->name);
+                Log::info("WhatsApp message sent", [
+                    'message_id' => $whatsappMessage->id,
+                    'mobile' => $model->mobile_no
+                ]);
             } catch (\Exception $e) {
                 Log::error("Failed to send WhatsApp message: " . $e->getMessage());
             }
-        }
+    
 
         /*
         |--------------------------------------------------------------------------

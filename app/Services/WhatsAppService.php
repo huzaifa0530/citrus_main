@@ -12,22 +12,29 @@ class WhatsAppService
 
     public function __construct()
     {
-        $this->accessToken = env('WHATSAPP_CLOUD_TOKEN'); 
-        $this->phoneNumberId = env('WHATSAPP_PHONE_NUMBER_ID'); 
+        $this->accessToken = env('WHATSAPP_CLOUD_TOKEN');
+        $this->phoneNumberId = env('WHATSAPP_PHONE_NUMBER_ID');
     }
 
-    public function sendMessage($to, $message)
+    public function sendProfileApprovedTemplate($to, $customerName)
     {
         try {
-            $url = "https://graph.facebook.com/v19.0/{$this->phoneNumberId}/messages";
+            $url = "https://graph.facebook.com/v22.0/{$this->phoneNumberId}/messages";
 
-            $response = Http::withToken($this->accessToken)
-                ->post($url, [
-                    "messaging_product" => "whatsapp",
-                    "to" => $to,
-                    "type" => "text",
-                    "text" => ["body" => $message],
-                ]);
+
+            $payload = [
+                "messaging_product" => "whatsapp",
+                "to" => $to,
+                "type" => "template",
+                "template" => [
+                    "name" => "jaspers_market_plain_text_v1", // approved template
+                    "language" => ["code" => "en_US"]
+                    // No components, because template has 0 placeholders
+                ]
+            ];
+
+
+            $response = Http::withToken($this->accessToken)->post($url, $payload);
 
             if ($response->successful()) {
                 return $response->json();
@@ -37,8 +44,10 @@ class WhatsAppService
             return false;
 
         } catch (\Exception $e) {
-            Log::error("WhatsApp message exception: " . $e->getMessage());
+            Log::error("WhatsApp template message exception: " . $e->getMessage());
             return false;
         }
     }
+
+
 }

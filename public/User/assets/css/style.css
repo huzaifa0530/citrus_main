@@ -4,6 +4,25 @@
   box-sizing: border-box;
 }
 
+.modal-header {
+  padding-left: 0 !important;
+}
+
+.modal-header .modal-title {
+  position: relative;
+  padding-left: 20px;
+}
+
+.modal-header .modal-title:after {
+  content: "";
+  background-color: #96ca4a;
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 4px;
+  height: 21px;
+}
+
 body {
   font-family: "DM Sans", sans-serif;
 }
