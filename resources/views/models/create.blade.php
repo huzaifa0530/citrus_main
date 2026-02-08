@@ -2,37 +2,42 @@
 
 @section('content')
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-<style>
-    .btn-logo-green {
-        background-color: #A3C940; /* Replace this with the exact green from your logo */
-        color: white;
-        border: none;
-    }
+    <style>
+        .btn-logo-green {
+            background-color: #A3C940;
+            /* Replace this with the exact green from your logo */
+            color: white;
+            border: none;
+        }
 
-    .btn-logo-green:hover {
-        background-color: #8BB232; /* Slightly darker shade for hover effect */
-        color: white;
-    }
-</style>
+        .btn-logo-green:hover {
+            background-color: #8BB232;
+            /* Slightly darker shade for hover effect */
+            color: white;
+        }
+    </style>
 
 
 
     <div class="container">
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>There were some problems:</strong>
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+
         <div class="row justify-content-center align-items-center">
             <div class="col-md-10">
+
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <strong>There were some problems:</strong>
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="card card-shadow p-4 rounded-4">
                     <img src="{{ asset('User/assets/img/logo.png') }}" alt="Logo" class="mb-3 align-self-center"
                         style="width:120px;">
@@ -426,22 +431,22 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mt-3">
+                        <!-- <div class="row justify-content-center mt-3">
 
-                            <!-- filed change -->
-                            <div class="col-md-5">
-                                <label class="form-label">Full Name (As per CNIC)</label>
-                                <input type="text" name="name_as_per_cnic" class="form-control"
-                                    placeholder="Enter Your Full Name (As per CNIC)" required
-                                    value="{{ old('name_as_per_cnic') }}">
 
-                            </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Full Name (As per CNIC)</label>
+                                    <input type="text" name="name_as_per_cnic" class="form-control"
+                                        placeholder="Enter Your Full Name (As per CNIC)" required
+                                        value="{{ old('name_as_per_cnic') }}">
 
-                            <div class="col-md-5">
-                                <label class="form-label">Signed Date</label>
-                                <input type="date" name="signed_date" class="form-control" value="{{ old('signed_date') }}">
-                            </div>
-                        </div>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label">Signed Date</label>
+                                    <input type="date" name="signed_date" class="form-control" value="{{ old('signed_date') }}">
+                                </div>
+                            </div> -->
 
                         <!-- Video -->
                         <div class="row justify-content-center mt-3">

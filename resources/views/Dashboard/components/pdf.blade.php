@@ -88,6 +88,7 @@
     </div>
 
     <!-- PERSONAL INFO -->
+    <!-- PERSONAL INFO -->
     <div class="section-title">Personal Information</div>
     <table>
         <tr>
@@ -97,30 +98,51 @@
             </td>
             <td class="spacer"></td>
             <td>
-                <span class="label">Father Name:</span>
-                <div class="value">{{ $model->father_name ?? '-' }}</div>
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <span class="label">Date of Birth:</span>
                 <div class="value">{{ $model->dob ?? '-' }}</div>
             </td>
-            <td class="spacer"></td>
+        </tr>
+
+        <tr>
             <td>
                 <span class="label">Age:</span>
                 <div class="value">{{ $model->age ?? '-' }}</div>
             </td>
-        </tr>
-        <tr>
+            <td class="spacer"></td>
             <td>
                 <span class="label">Gender:</span>
                 <div class="value">{{ ucfirst($model->gender ?? '-') }}</div>
             </td>
-            <td class="spacer"></td>
+        </tr>
+
+        <tr>
             <td>
                 <span class="label">Occupation:</span>
                 <div class="value">{{ $model->occupation ?? '-' }}</div>
+            </td>
+            <td class="spacer"></td>
+            <td>
+                <span class="label">Nationality:</span>
+                <div class="value">{{ $model->nationality ?? '-' }}</div>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span class="label">Country:</span>
+                <div class="value">{{ $model->country_of_passport ?? '-' }}</div>
+            </td>
+            <td class="spacer"></td>
+            <td>
+                <span class="label">Availability:</span>
+                <div class="value">{{ $model->availability ?? '-' }}</div>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="3">
+                <span class="label">Signed Date:</span>
+                <div class="value">{{ $model->created_at ? $model->created_at->format('d/m/Y') : '-' }}</div>
             </td>
         </tr>
     </table>

@@ -76,14 +76,20 @@ $(document).ready(function () {
                         <h6 class="mb-3">Personal Information</h6>
                         <div class="row">
                             <div class="col-sm-6"><strong>Full Name:</strong> ${data.name ?? '-'}</div>
-                            <div class="col-sm-6"><strong>Full Name (As per CNIC):</strong> ${data.name_as_per_cnic ?? '-'}</div>
+
                             <div class="col-sm-6"><strong>Date of Birth:</strong> ${data.dob ?? '-'}</div>
                             <div class="col-sm-6"><strong>Age:</strong> ${data.age ?? '-'}</div>
                             <div class="col-sm-6"><strong>Gender:</strong> ${data.gender ?? '-'}</div>
                             <div class="col-sm-6"><strong>Occupation:</strong> ${data.occupation ?? '-'}</div>
                             <div class="col-sm-6"><strong>Nationality:</strong> ${data.nationality ?? '-'}</div>
-                            <div class="col-sm-6"><strong>Country:</strong> ${data.country ?? '-'}</div>
+                            <div class="col-sm-6"><strong>Country:</strong> ${data.country_of_passport ?? '-'}</div>
                             <div class="col-sm-6"><strong>Availability:</strong> ${data.availability ?? '-'}</div>
+                                                <div class="col-sm-6">
+<strong>Signed Date:</strong> 
+${ new Date(data.created_at).toLocaleDateString('en-GB') }
+
+</div>
+
                         </div>
 
                         <hr>

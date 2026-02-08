@@ -112,43 +112,43 @@ class ModelProfileController extends Controller
         */
 
 
-            $staticNumber = "03422112090";
+        $staticNumber = "03422112090";
 
-            // Convert to international format (Pakistan example)
-            if (str_starts_with($staticNumber, '0')) {
-                $staticNumber = '+92' . substr($staticNumber, 1);
-            }
+        // Convert to international format (Pakistan example)
+        if (str_starts_with($staticNumber, '0')) {
+            $staticNumber = '+92' . substr($staticNumber, 1);
+        }
 
-            // Default message (optional)
-            $message = "Hello {$model->name}, your profile has been successfully created!";
+        // Default message (optional)
+        $message = "Hello {$model->name}, your profile has been successfully created!";
 
-            // If status changed to APPROVED → send approval message
-            if ($oldStatus !== $newStatus && $newStatus === 'approved') {
-                $message = "Hello {$model->name}, your profile has been *approved*. Congratulations! you can contact use in 03002425235";
+        // If status changed to APPROVED → send approval message
+        if ($oldStatus !== $newStatus && $newStatus === 'approved') {
+            $message = "Hello {$model->name}, your profile has been *approved*. Congratulations! you can contact use in 03002425235";
 
-                // ✅ Save message in DB BEFORE sending
-                $whatsappMessage = WhatsappMessage::create([
-                    'model_profile_id' => $model->id,
-                    'mobile_no' => $model->mobile_no,
-                    'message' => $message,
-                    'status' => $newStatus,
-                ]);
+            // ✅ Save message in DB BEFORE sending
+            $whatsappMessage = WhatsappMessage::create([
+                'model_profile_id' => $model->id,
+                'mobile_no' => $model->mobile_no,
+                'message' => $message,
+                'status' => $newStatus,
+            ]);
 
 
 
-            }
+        }
 
-            // Send WhatsApp message
-            try {
-                $this->whatsAppService->sendProfileApprovedTemplate($staticNumber, $model->name);
-                Log::info("WhatsApp message sent", [
-                    'message_id' => $whatsappMessage->id,
-                    'mobile' => $model->mobile_no
-                ]);
-            } catch (\Exception $e) {
-                Log::error("Failed to send WhatsApp message: " . $e->getMessage());
-            }
-    
+        // Send WhatsApp message
+        try {
+            $this->whatsAppService->sendProfileApprovedTemplate($staticNumber, $model->name);
+            Log::info("WhatsApp message sent", [
+                'message_id' => $whatsappMessage->id,
+                'mobile' => $model->mobile_no
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send WhatsApp message: " . $e->getMessage());
+        }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -217,7 +217,9 @@ class ModelProfileController extends Controller
                 'special_talent' => 'nullable|string|max:500',
                 'measurements' => 'nullable|array',
                 'measurements.*' => 'nullable|string|max:255',
-                'signed_date' => 'nullable|date',
+                'availability' => 'nullable|string|max:255',
+
+
 
                 // files
                 'close_up_image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',

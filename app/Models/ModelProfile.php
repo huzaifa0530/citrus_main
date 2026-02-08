@@ -46,11 +46,11 @@ class ModelProfile extends Model
         'other_languages',
         'special_talent',
         'measurements',
-        'signed_date',
+        
         'status',
         'isVerified',
         'availability',
-        'name_as_per_cnic'
+  
     ];
 
     // Relationship

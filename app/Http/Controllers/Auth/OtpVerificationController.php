@@ -65,7 +65,8 @@ class OtpVerificationController extends Controller
             // ✅ Clear OTP session data
             session()->forget(['model_otp', 'model_email', 'model_id']);
 
-            return redirect()->route('dashboard')->with('success', 'Model verified successfully!');
+            return redirect()->route('models.create')->with('success', 'Model verified successfully!');
+
         }
 
         Log::warning('OTP mismatch or session expired', compact('enteredOtp', 'sessionOtp', 'sessionEmail'));
